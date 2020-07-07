@@ -17,7 +17,7 @@ from tkinter.filedialog import asksaveasfile # asksaveasfilename
 
 
 # Prompt for PMID
-print('PMCites - A utility to query the NCBI database for citation data/bibilography.')
+print('PMCitE - A utility to query the NCBI database for citation data/bibilography.')
 while 1:
     try:
         PMID = int(input('Please input the PMID:\n'))
