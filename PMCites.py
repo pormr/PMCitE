@@ -2,7 +2,7 @@
 """
 Created on Tue Jul  7 13:29:41 2020
 
-PMCite - PubMed Citation Retriever
+PMCitE - PubMed Citation Extractor
 
 A utility to query the NCBI database for citation data/bibilography.
 
