@@ -4,7 +4,7 @@
  Currently supported formats:
   - NBIB Formatted File (PubMed) (*.nbib)
   - Comma Separated Values (CSV) File (*.csv)
-  - Text File
+  - Text File (*.txt)
     - PMID List
     - Summary/Bibliography (in AMA style)
     - Abstract
