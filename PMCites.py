@@ -17,7 +17,7 @@ from tkinter.filedialog import asksaveasfile # asksaveasfilename
 
 
 # Prompt for PMID
-print('PMCite - A utility to query the NCBI database for citation data/bibilography.')
+print('PMCites - A utility to query the NCBI database for citation data/bibilography.')
 while 1:
     try:
         PMID = int(input('Please input the PMID:\n'))
@@ -33,13 +33,13 @@ post_URI = "https://pubmed.ncbi.nlm.nih.gov/results-export-search-data/"
 retry_times = 3
 for i in range(retry_times):
     try:
-        citation_XML = requests.post(citation_URI % PMID, timeout=1)
+        citation_XML = requests.post(citation_URI % PMID, timeout=5)
     except requests.exceptions.Timeout:
-        print('Connection timeout - Retry for %i time(s)' % i + 1)
+        print('Connection timeout - Retry for %i time(s)' % (i + 1))
     except requests.exceptions.ReadTimeout:
-        print('Read timeout - Retry for %i time(s)' % i + 1)
+        print('Read timeout - Retry for %i time(s)' % (i + 1))
     except requests.exceptions.SSLError:
-        print('SSL error - Retry for %i time(s)' % i + 1)
+        print('SSL error - Retry for %i time(s)' % (i + 1))
     except requests.exceptions.ConnectionError:
         # Other unhandled network errors goes here
         print('Connection error - please check your connection.')
