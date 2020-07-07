@@ -4,20 +4,21 @@ Created on Tue Jul  7 13:29:41 2020
 
 PMCitE - PubMed Citation Extractor
 
-A utility to query the NCBI database for citation data/bibilography.
+A utility to query the NCBI database for citation data/bibliography.
 
 @author: pormr
 """
 
 import os
-import re
+#import re
 import requests
 from tkinter import Tk
-from tkinter.filedialog import asksaveasfile # asksaveasfilename
+from tkinter.filedialog import asksaveasfilename
 
 
 # Prompt for PMID
-print('PMCitE - A utility to query the NCBI database for citation data/bibilography.')
+# TODO: Add functionality for resolving DOIs
+print('PMCitE - A utility to query the NCBI database for citation data/bibliography.')
 while 1:
     try:
         PMID = int(input('Please input the PMID:\n'))
@@ -41,7 +42,7 @@ for i in range(retry_times):
     except requests.exceptions.SSLError:
         print('SSL error - Retry for %i time(s)' % (i + 1))
     except requests.exceptions.ConnectionError:
-        # Other unhandled network errors goes here
+        # Other unhandled network errors go here
         print('Connection error - please check your connection.')
         os._exit(0)
     else:
@@ -61,29 +62,53 @@ s = requests.Session()
 s.get(query_URI % PMID)
 csrftoken = s.cookies['labs-pubmed-csrftoken']
 
+# Prompt for the filename
+Tk_root = Tk()
+Tk_root.withdraw()
+format_mapping = {'nbib': 'pubmed', 'csv': 'csv', 'txt': 'summary-text',
+                  '~pmid': 'pmid', '~abs': 'abstract', '~sum': 'summary-text'}
+file_types = [('NBIB Formatted File (PubMed) (*.nbib)', '*.nbib'),
+              ('Comma Separated Values (CSV) File (*.csv)', '*.csv'),
+              ('Text File (PMIDs) (*.txt)', ('*.~pmid', '*.txt')),
+              ('Text File (Summary) (*.txt)', ('*.~sum', '*.txt')),
+              ('Text File (Abstract) (*.txt)', ('*.~abs', '*.txt')),
+              ('All Files (*.*)', '*.*')]
+default_name = "pubmed-%i.nbib" % PMID
+default_dir = os.path.normpath(os.path.expanduser("~/Desktop"))
+filename = asksaveasfilename(initialfile = default_name,
+                             filetypes = file_types,
+                             defaultextension = file_types,
+                             initialdir = default_dir)
+
+# Replace the dummy extensions
+if filename:
+    tmp = filename.split('.')
+    result_format = format_mapping.get(tmp[-1], 'pmid')
+    if '~' in tmp[-1]:
+        tmp[-1] = 'txt'
+        filename = '.'.join(tmp)
+else:
+    print('Saving aborted.')
+    os._exit(0)
+
 # Prepare the request
 headers={'Referer': query_URI % PMID + '#'}
 post_data = {'csrfmiddlewaretoken': csrftoken,
-             'results-format': 'pubmed',
+             'results-format': result_format,
              'term': '',
              'term_alias': 'LINKSET|pubmed_pubmed_refs|%i' % PMID}
 result = s.post(post_URI, data=post_data, headers=headers, stream=True)
 
-# Prompt for the filename and get the file handle
-Tk_root = Tk()
-Tk_root.withdraw()
-file_types = [('NBIB Formatted File (PubMed) (*.nbib)', '*.nbib'),
-              ('All Files (*.*)', '*.*')]
-file = re.findall('filename="(.+)"', result.headers['Content-Disposition'])[0]
-default_dir = os.path.normpath(os.path.expanduser("~/Desktop"))
-f = asksaveasfile(initialfile = file,
-                  filetypes = file_types,
-                  defaultextension = file_types,
-                  initialdir = default_dir,
-                  mode = "wb")
 
 # Write raw data to the file
-for chunk in result.iter_content(chunk_size=512):
-    if chunk:
-        f.write(chunk)
-f.close()
+try:
+    f = open(filename,"wb")
+    for chunk in result.iter_content(chunk_size=512):
+        if chunk:
+            f.write(chunk)  # TODO: Add progress bar?
+except IOError:
+    print("IO Error : Unable to save result to file.")
+    os._exit(0)
+finally:
+    f.close()
+
