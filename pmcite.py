@@ -60,7 +60,7 @@ if 'LinkSetDb' not in citation_XML.text:
 # Fetch the 'csrftoken'
 s = requests.Session()
 s.get(query_URI % PMID)
-csrftoken = s.cookies['labs-pubmed-csrftoken']
+csrftoken = s.cookies['pm-csrf']
 
 # Prompt for the filename
 Tk_root = Tk()
